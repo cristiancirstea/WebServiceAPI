@@ -8,24 +8,22 @@
 class Security {
     
     private $_tempKEY;
-    private $_amaID;
-//    private $_dreptSuprem;
+    private $_userID;
+    private $_adminRights;
     private $db;
     private $errorLogFile;
     public $showErrorCodes;
-    public static $_specialPassw="cGFyb2xh";
-    public static $_specialFile="./library/database.php";
     public function __construct() {
-        $this->_amaID=0;
-        $this->_dreptSuprem=false;
+        $this->_userID=0;
+        $this->_adminRights=false;
         $this->db= new DBClass();
     }
     public function __destruct() {
         unset($this->db);
     }
     public function GetKey(){return $this->_tempKEY;}
-    public function GetAmaID(){ return $this->_amaID;}
-    public function GetDreptSuprem(){ return $this->_dreptSuprem;}
+    public function GetUserID(){ return $this->_userID;}
+    public function GetAdminRights(){ return $this->_adminRights;}
     /**
      * 
      * @param String $errCode           Codul erorii
@@ -74,13 +72,12 @@ class Security {
             }
     }
     
+	
+	//TODO !!!!
     public function CheckKey($k,$checkLogIn=false)
     {
         try {
-            $sql=" select AMA_ID from JO_KEYS
-                where (current_timestamp>dela) and (current_timestamp<la) and KEY_VALUE='$k'";
-            $resultAMA=$this->db->GetTable($sql); 
-             if (count($resultAMA)===0)  
+            if ($k!=='key')
              {
                  if ($checkLogIn===true)
                  {
@@ -90,66 +87,39 @@ class Security {
              }
              else 
             {
-                    $this->_amaID=$resultAMA[0]["AMA_ID"];
-//                $this->_dreptSuprem=($resultAMA[0]["DREPT_SUPREM"]==1);  
+                    $this->_userID=1;  
                return true;
             }
         }
         catch (Exception $e)
         {
             Security::_ThrowError("SE00001","Eroare la verificarea datelor de autentificare."/*.$e*/);
-            dbRollback();
-            dbCloseConnection();
         }
     }
-    private function SaveKey($ama_id,$hoursActive=2,$alternateKey=null)
+	//TODO save key !!!!!!!!!!!!!!
+    private function SaveKey($user_id,$hoursActive=2,$alternateKey=null)
     {
         try {
-            $sql="insert into JO_KEYS (KEY_VALUE,DELA,LA,AMA_ID) values 
-                    ('".(($alternateKey)?$alternateKey:$this->_tempKEY).
-                    "',current_timestamp,"
-                    . "dateadd($hoursActive hour to current_timestamp),"
-                    . "$ama_id)";
-            //Security::_ErrorLog("-1", $sql);
-            $aBool=$this->db->ExecuteStatement($sql); 
-            return $aBool;
+           //TODO
+          
         }
         catch (Exception $e)
         {
             Security::_ThrowError("SE00002","Eroare la verificarea datelor de autentificare."/*.$e*/);
-            dbRollback();
-            dbCloseConnection();
         }
     }
+	//TODO !!!!!!!!!!!!!!!!!
     public function LogOut($key)
     {
         $errName="";
         $errCode="";
          try {
-            $sql="select ama_id from JO_KEYS where  key_value='$key'";
-            $result=$this->db->GetTable($sql); 
-            if (count($result)==0)
-            {
-                $errCode="SE00003";
-                $errName="Cheie invalida.";
-              
-            }
-            else
-            {
-                $aBool= $this->ClearKeys($result[0]["AMA_ID"],true);
-                if (!$aBool)
-                {
-                    $errCode="SE00009";
-                    $errName="Nu s-au putut sterge cheile!";
-                }
-            }
+ 
         }
         catch (Exception $e)
         {
             $errCode="SE00004";
                 $errName="Eroare de autentificare."/*.$e*/;
-            dbRollback();
-            dbCloseConnection();
         }
           if ($errCode!=="")
             {
@@ -158,56 +128,43 @@ class Security {
             }
          return true;
     }
+	//TODO !!!!!!!!!!!!!!!!!!
     private function ClearKeys($ama_id,$all=false)
     {
         try {
-            $sql="delete from JO_KEYS where (AMA_ID=$ama_id";
-            if (!$all)
-                $sql.=" and ((current_timestamp<dela) or (current_timestamp>la))) ";
-            else
-                $sql.=")";
-            $sql.=" or (AMA_ID=-1 and dela<ADDMONTH('now',-1)) ";
-            $aBool=$this->db->ExecuteStatement($sql); 
-            return $aBool;
+           return true;
         }
         catch (Exception $e)
         {
             Security::_ThrowError("SE00005","Eroare de autentificare."/*.$e*/);
-            dbRollback();
-            dbCloseConnection();
             return false;
         }
     }
+	//TODO !!!!!!!!!!!!!!!!!!!!!!!
     public function CheckUser($u,$p,$ip)
     {
         $errorMessage="";
         $errorCode="";
          try {
-            $sql=" select prenume||' '||nume as avocat,ama_id,DREPT_SUPREM,passw from avocati_ma 
-                where upper(username)=upper('".$u."') and activ=1";
-            $resultUser=$this->db->GetTable($sql);
-            if (count($resultUser)===0)
-            {
-                $errorCode="SE00006";
-                $errorMessage="Utilizatorul nu a fost gasit in baza de date.";
-            }
-            else
-            if (md5($resultUser[0]["PASSW"])===$p)
-            {
+           // get_users
+           // if (count(@users_in_db)===0)
+           // {
+           //     $errorCode="SE00006";
+           //     $errorMessage="Utilizatorul nu a fost gasit in baza de date.";
+           // }
+           // else
+           // if (@check_password)
+           // {
                
-                $this->_tempKEY=$this->GenerateKey();
-                $this->SaveKey($resultUser[0]["AMA_ID"]);
-                $this->_amaID=$resultUser[0]["AMA_ID"];
-//                $this->_dreptSuprem=($resultUser[0]["DREPT_SUPREM"]==1);
+           //     $this->_tempKEY=$this->GenerateKey();
+            //    $this->SaveKey(@user_id_from_db);
+            //    $this->_userID=@user_id_from_db;
+//                $this->_adminRights=@user_has_admin_right;
                 //20 ESTE ID-UL PT JURNAL ONLINE
-                $sqlU=" SELECT LOGARE_ID FROM INSERT_ISTORIC_LOGARE
-                    (".$resultUser[0]["AMA_ID"].",'$ip' , 20)";
-                $resultLogID=$this->db->GetTable($sqlU);
-                $resultUser[0]["LOGARE_ID"]=$resultLogID[0]["LOGARE_ID"];
-                 $resultUser[0]["KEY"]=  $this->_tempKEY;
-                unset ($resultUser[0]["PASSW"]);
+
+               //  $resultUser[0]["KEY"]=  $this->_tempKEY;
                 
-                $this->ClearKeys($resultUser[0]["AMA_ID"]);
+              //  $this->ClearKeys(@user_id_from_db);
             }
             else {
                 $errorCode="SE00007";
@@ -217,8 +174,7 @@ class Security {
         catch (Exception $e)
         {
              Security::_ThrowError("SE00008", "Eroare la verificarea datelor de autentificare.","",true);
-            //throw new Exception("SE00008 Eroare la verificarea datelor de autentificare."/*.$e*/);
-            return null;
+			return null;
         }
         if ($errorCode!=="")
         {
@@ -231,6 +187,7 @@ class Security {
         else
             return null;
     }
+	
     private function psMicroTime()
     {
             list($usec, $sec) = explode(" ", microtime());
