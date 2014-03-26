@@ -21,7 +21,8 @@ background-color:#E1F0F8;
 padding:5px;
 }
 .method-buttons{
-height:25px;
+height:30px;
+margin-top:20px;
 }
 
 .row-method{
@@ -41,12 +42,27 @@ margin-top:5px;
 display: inline-block;
 margin-right: 5px;
 }
-.btn-toggle-params,
-.btn-add-param-value{
+.btn-toggle-params{
 width: 20px;
 height: 20px;
 padding: 0px;
 font-weight: bold;
+}
+
+.btn-add-param-value,
+.btn-add-extra-reques{
+height: 30px;
+width: 45px;
+font-weight: bold;
+}
+.btn-add-extra-request{
+	margin-right:5px;
+	margin-top:5px;
+}
+.close-input-param-value{
+margin-left: 5px;
+margin-top: 5px;
+float: none;
 }
 .method-name{
 margin-right:5px;
@@ -55,6 +71,46 @@ margin-left:10px;
 margin-bottom: 0px;
 padding-bottom: 5px;
 }
-.extra-request{
+textarea.extra-request{
 width:97%;
+}
+.container-extra-request{
+padding:0px;
+padding-top:2px;
+background-color: #EAF3F8;
+margin-bottom: -1px;
+}
+.container-extra-request>.close{
+margin:5px;
+}
+.container-extra-request-name,
+.container-extra-request-value{
+display:inline-block;
+margin-left:5px;
+}
+.container-extra-request-name > label,
+.container-extra-request-value >label{
+display:inline-block;
+margin-left:5px;
+font-size:12px;
+}
+.container-extra-request-name > input,
+.container-extra-request-value >input{
+width:150px;
+margin-top: 5px;
+margin-bottom:5px;
+}
+#resetAllInputs{
+margin-bottom: 5px;
+}
+
+#label-return-ws{
+margin-top:10px;
+}
+.btn-get-response{
+width:70px;
+}
+.btn-post-response,
+.btn-put-response{
+width:60px;
 }
