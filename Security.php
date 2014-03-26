@@ -16,7 +16,7 @@ class Security {
     public function __construct() {
         $this->_userID=0;
         $this->_adminRights=false;
-        $this->db= new DBClass();
+        //$this->db= new DBClass();
     }
     public function __destruct() {
         unset($this->db);
@@ -77,23 +77,11 @@ class Security {
     public function CheckKey($k,$checkLogIn=false)
     {
         try {
-            if ($k!=='key')
-             {
-                 if ($checkLogIn===true)
-                 {
-                     $this->SaveKey (-1,1,$k);
-                 }
-                  return false;
-             }
-             else 
-            {
-                    $this->_userID=1;  
-               return true;
-            }
+            
         }
         catch (Exception $e)
         {
-            Security::_ThrowError("SE00001","Eroare la verificarea datelor de autentificare."/*.$e*/);
+            Security::_ThrowError("SE00001","Error."/*.$e*/);
         }
     }
 	//TODO save key !!!!!!!!!!!!!!
@@ -105,7 +93,7 @@ class Security {
         }
         catch (Exception $e)
         {
-            Security::_ThrowError("SE00002","Eroare la verificarea datelor de autentificare."/*.$e*/);
+            Security::_ThrowError("SE00002","Error."/*.$e*/);
         }
     }
 	//TODO !!!!!!!!!!!!!!!!!
@@ -119,7 +107,7 @@ class Security {
         catch (Exception $e)
         {
             $errCode="SE00004";
-                $errName="Eroare de autentificare."/*.$e*/;
+                $errName="Error."/*.$e*/;
         }
           if ($errCode!=="")
             {
@@ -129,63 +117,21 @@ class Security {
          return true;
     }
 	//TODO !!!!!!!!!!!!!!!!!!
-    private function ClearKeys($ama_id,$all=false)
+    private function ClearKeys($user_id,$all=false)
     {
         try {
            return true;
         }
         catch (Exception $e)
         {
-            Security::_ThrowError("SE00005","Eroare de autentificare."/*.$e*/);
+            Security::_ThrowError("SE00005","Error."/*.$e*/);
             return false;
         }
     }
 	//TODO !!!!!!!!!!!!!!!!!!!!!!!
     public function CheckUser($u,$p,$ip)
     {
-        $errorMessage="";
-        $errorCode="";
-         try {
-           // get_users
-           // if (count(@users_in_db)===0)
-           // {
-           //     $errorCode="SE00006";
-           //     $errorMessage="Utilizatorul nu a fost gasit in baza de date.";
-           // }
-           // else
-           // if (@check_password)
-           // {
-               
-           //     $this->_tempKEY=$this->GenerateKey();
-            //    $this->SaveKey(@user_id_from_db);
-            //    $this->_userID=@user_id_from_db;
-//                $this->_adminRights=@user_has_admin_right;
-                //20 ESTE ID-UL PT JURNAL ONLINE
-
-               //  $resultUser[0]["KEY"]=  $this->_tempKEY;
-                
-              //  $this->ClearKeys(@user_id_from_db);
-            }
-            else {
-                $errorCode="SE00007";
-                $errorMessage="Date de autentificare invalide.";
-            }
-        }
-        catch (Exception $e)
-        {
-             Security::_ThrowError("SE00008", "Eroare la verificarea datelor de autentificare.","",true);
-			return null;
-        }
-        if ($errorCode!=="")
-        {
-            Security::_ThrowError($errorCode,$errorMessage,"",true);
-            return null;
-       }
-        
-        if ($resultUser)
-            return $resultUser;
-        else
-            return null;
+        return null;
     }
 	
     private function psMicroTime()
