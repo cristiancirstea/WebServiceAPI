@@ -23,6 +23,10 @@ $(document).on("ready",function(){
 	ActivateBtnPostResponse();
 	ActivateBtnPutResponse();
 	ActivateBtnDeleteResponse();
+	
+	ActivateBtnAddParamValue();
+	ActivateBtnAddExtraRequest();
+	ActivateBtnCloseParent();
 });
 
 
@@ -33,7 +37,7 @@ if (typeof(theBtn)==="string")
     else
         var theBtn=theBtn;
 	var URI=theBtn.parent(".btn-group-ws-response")
-					.siblings("input").val();
+					.siblings(".inputMethodNr").val();
 		//Console(URI);
 		var methodNr=theBtn.attr("methodNr");
 		//Console(methodNr);
@@ -49,7 +53,7 @@ if (typeof(theBtn)==="string")
 			}
 			//Console(paramName+'->'+paramVal);
 		});
-		Console(URI);
+		//Console(URI);
 		return URI;
 }
 
@@ -60,12 +64,27 @@ if (typeof(theBtn)==="string")
     else
         var theBtn=theBtn;
 	var methodNr=theBtn.attr("methodNr");
-	var extraRequest=$("#extra-request"+methodNr).val();
-		extraRequest=extraRequest.trim();
-		if (extraRequest=='')
+	var arParamName=[];
+	var arParamValue=[];
+	var paramName='';
+	var paramValue='';
+	$("#method-extra-request"+methodNr).children('.container-extra-request')
+	.each(function(){
+		paramName=$(this).children('.container-extra-request-name')
+			.children('input').val();
+		paramValue=$(this).children('.container-extra-request-value')
+			.children('input').val();
+		if (typeof(paramName)!='undefined')
 			{
-				extraRequest='{}';
+				paramName=paramName.trim();
+				if (paramName!='')
+				{
+					arParamName[arParamName.length]=paramName;
+					arParamValue[arParamValue.length]=paramValue;
+				}
 			}
+	});
+	var extraRequest=GenerateJSONString(arParamName,arParamValue);
 		//Console(extraRequest);
 		return extraRequest;
 }
@@ -116,3 +135,61 @@ function ActivateBtnDeleteResponse()
 	});
 }
 //-------------------------------------
+
+function ActivateBtnAddParamValue()
+{
+	$(".btn-add-param-value").on("click",function(){
+		var inputHtml=$(this).siblings("input").outerHTML();
+		var removeInputHtml='<button type="button" class="close close-parent close-input-param-value" '
+								+'id="'+AvailableID('close-input-param-value')+'">'
+								+'&times;'
+								+'</button>';
+		var parinte=$(this).parent(".ia-method-param-value");
+		parinte.append('<div class="container-extra-param" '
+						+'id="'
+						+AvailableID("container-extra-param")+
+						'">'
+							+inputHtml
+							+removeInputHtml
+						+'</div>');
+		ActivateBtnCloseParent();	
+	});
+}
+function ActivateBtnAddExtraRequest()
+{
+	$(".btn-add-extra-request").on("click",function(){
+		var inputHtml=$(this).siblings("input").outerHTML();
+		var removeInputHtml='<button type="button" class="close close-parent close-input-param-value" '
+								+'id="'+AvailableID('close-input-param-value')+'">'
+								+'&times;'
+								+'</button>';
+		var parinte=$(this).parent(".container-extra-request").parent();
+		var containerExtraRequestHtml='<div class="well container-extra-request" '
+												+'id="'+AvailableID('container-extra-request')+'">'
+												+'<div class="container-extra-request-name">'
+													+'<label for="'+AvailableID('extra-request-param-name')+'">Name:</label>'
+													+'<input type="text" id="'+AvailableID('extra-request-param-name')+'"/>'
+												+'</div>'
+												+'<div class="container-extra-request-value">'
+													+'<label for="'+AvailableID('extra-request-param-value')+'">Value:</label>'
+													+'<input type="text" id="'+AvailableID('extra-request-param-value')+'"/>'
+												+'</div>'
+												+'<button type="button" class="close close-parent">&times;</button>'
+										+'</div>';
+		parinte.append(containerExtraRequestHtml);
+		ActivateBtnCloseParent();	
+	});
+}
+function ActivateBtnCloseParent(){
+	$(".close-parent").on("click",function(){
+		$(this).parent("div").remove();
+	});
+}
+function ResetAllInputs()
+{
+	$("input").val("");
+	$("textarea").val("");
+}
+
+
+
