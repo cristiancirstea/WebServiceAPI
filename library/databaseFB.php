@@ -73,7 +73,7 @@
    
     function dbConnection(){
         $passwBaza=  base64_decode($GLOBALS["passwBaza"]);
-        $result= ibase_connect($GLOBALS['path'],$GLOBALS['userBaza'], $passwBaza());
+        $result= ibase_connect($GLOBALS['path'],$GLOBALS['userBaza'], $passwBaza;
               // or die ('Eroare de conectare Firebird. '.  ibase_errmsg());
         if (!$result)
         {
@@ -99,40 +99,6 @@
    function dbColInfo($result,$index)
    {
        return ibase_field_info($result, $index);
-   }
-   function _d39121117b_()
-   {
-       
-       $key_const="SEtFWV9MT0NBTF9NQUNISU5F";
-       $key1="U09GVFdBUkU=";
-       $key2="Skc=";
-       $key3="REJQYXNz";
-       $wscript = new COM('WScript.Shell');
-        $result= $wscript->RegRead(base64_decode($key_const)."\\".base64_decode($key1)."\\".
-                base64_decode($key2)."\\JG2\\".base64_decode($key3)) or die ('Eroare de conectare Firebirdr.');
-        return base64_decode($result);
-   }
-   function _d45121782b_()
-   {
-       $key_const="SEtFlF9MT4NBTF9NgUNISU5F";
-       $key1="R09GVBdBJKU=";
-       $key2="STc=j";
-       $key3="REJLKNNz";
-       $wscript = new COM('WScript.Shell');
-        $result= $wscript->RegRead(base64_decode($key_const)."\\".base64_decode($key1)."\\".
-                base64_decode($key2)."\\".base64_decode($key3)) or die ('Eroare de conectare Firebirdr.');
-        return $result;
-   }
-   function _d3236459817b_()
-   {
-       $key_const="SEtFWV45f0NBTF9NQUNISU5F";
-       $key1="TB09GV36rUkU=";
-       $key2="Lpnc=45";
-       $key3="RQ36G8XNz";
-       $wscript = new COM('WScript.Shell');
-        $result= $wscript->RegRead(base64_decode($key_const)."\\".base64_decode($key1)."\\".
-                base64_decode($key2)."\\".base64_decode($key3)) or die ('Eroare de conectare Firebirdr.');
-        return $result;
    }
    function dbColAttr($result,$index,$attrName='name')
    {
