@@ -73,7 +73,7 @@
    
     function dbConnection(){
         $passwBaza=  base64_decode($GLOBALS["passwBaza"]);
-        $result= ibase_connect($GLOBALS['path'],$GLOBALS['userBaza'], $passwBaza;
+        $result= ibase_connect($GLOBALS['path'],$GLOBALS['userBaza'], $passwBaza);
               // or die ('Eroare de conectare Firebird. '.  ibase_errmsg());
         if (!$result)
         {
