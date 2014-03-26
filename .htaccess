@@ -5,4 +5,11 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule service(.*)$ ./service_access.php?request=$1 [QSA,NC,L]
 </IfModule>
 
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule methods(.*)$ ./service_methods.php?request=$1 [QSA,NC,L]
+</IfModule>
+
 DirectoryIndex <service_access.php>
