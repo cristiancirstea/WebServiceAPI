@@ -1,4 +1,3 @@
-
 $(document).on("ready",function(){
 		$(".method-options").hide();
 		//toggle params list
@@ -187,7 +186,7 @@ function ActivateBtnCloseParent(){
 }
 function ResetAllInputs()
 {
-	$("input").val("");
+	$("input[type!='hidden']").val("");
 	$("textarea").val("");
 }
 
