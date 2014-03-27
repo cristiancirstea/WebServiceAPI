@@ -122,7 +122,7 @@ include 'My_API.php';
 		onclick="ResetAllInputs();">
 			Reset All
 	</button>
-		<div class="container">
+		<div class="">
 			<label id="label-return-ws" for="text-return-ws" > <b>Return: </b></label>
 			<textarea class="span5" id="text-return-ws"></textarea>
 		</div>
