@@ -5,7 +5,8 @@ include 'My_API.php';
  <div class="container well">
 	<div class="pull-left container span6">
 		<?php
-			$WS_ROOT='http://localhost:1234/WS/service';
+			$fullURL="http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+			$WS_ROOT= str_replace(basename($_SERVER['PHP_SELF']),'service',$fullURL);
 			$URI="/";
 			$rClass = new ReflectionClass('MyAPI');
 			$array = NULL;
