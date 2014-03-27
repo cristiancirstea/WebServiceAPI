@@ -5,8 +5,23 @@ include 'My_API.php';
  <div class="container well">
 	<div class="pull-left container span6">
 		<?php
+			function startsWith($haystack, $needle)
+			{
+				return $needle === "" || strpos($haystack, $needle) === 0;
+			}
+			function endsWith($haystack, $needle)
+			{
+				return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
+			}
+			$URI_FOR_REWRITE_RULE='methods';
 			$fullURL="http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-			$WS_ROOT= str_replace(basename($_SERVER['PHP_SELF']),'service',$fullURL);
+			if (endsWith($fullURL,$URI_FOR_REWRITE_RULE)){
+				$strToReplace=$URI_FOR_REWRITE_RULE;
+			}
+			else{
+				$strToReplace=basename($_SERVER['PHP_SELF']);
+			}
+			$WS_ROOT= str_replace($strToReplace,'service',$fullURL);
 			$URI="/";
 			$rClass = new ReflectionClass('MyAPI');
 			$array = NULL;
