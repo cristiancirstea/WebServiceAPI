@@ -1,6 +1,6 @@
 <?php
 $path="";
 $userBaza="SYSDBA";
-$passwBaza="X2QzOTEyMTExN2Jf";
+$passwBaza="";
 $errorCodes=true;
 ?>
