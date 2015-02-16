@@ -1,8 +1,8 @@
 <?php
 
-include_once dirname(__FILE__).'/APIBase.php';
+include_once dirname(__FILE__).'/APIServerBase.php';
 
-class APIClient extends API
+class APIServer extends APIServerBase
 {
     public function __construct($arrRequest, $origin) {
         parent::__construct($arrRequest);

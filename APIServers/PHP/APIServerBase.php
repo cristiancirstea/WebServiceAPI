@@ -1,5 +1,6 @@
 <?php
-abstract class API{
+require_once("APIServerException.php");
+abstract class APIServerBase{
 	
     protected $_returnFormatJSON = true;
      /**
@@ -70,7 +71,7 @@ abstract class API{
                 $this->strMethod = self::REQUEST_PUT;
             } 
 			else {
-                throw new Exception("GWS0001 Unexpected Header");
+                throw new APIServerException("GWS0001 Unexpected Header");
             }
         }
         $this->file = file_get_contents("php://input");
@@ -196,7 +197,9 @@ abstract class API{
 					$strParams = "$".$arrParamsNames[0];
 					for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
 						$strParams .= ", $".$arrParamsNames[$nIndex];
-					throw new Exception("Not enough parameters for " . $this->strEndpoint. "(".$strParams.")");
+					throw new APIServerException("Not enough parameters for " . $this->strEndpoint. "(".$strParams.")",
+							APIServerException::PARAMS_LESS
+						);
 				}
 				else
 					if (count($this->arrArgs) > $nParamsNr)
@@ -204,7 +207,9 @@ abstract class API{
 						$strParams = "$".$arrParamsNames[0];
 						for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
 							$strParams .= ", $".$arrParamsNames[$nIndex];
-						throw new Exception("Too many parameters for " . $this->strEndpoint. "(".$strParams.")");
+						throw new APIServerException("Too many parameters for " . $this->strEndpoint. "(".$strParams.")",
+								APIServerException::PARAMS_MORE
+							);
 					}
 				//optional can set the extra parameters to null and call the function
 				// //we makes sure that we call the method with all required parameters
@@ -226,20 +231,26 @@ abstract class API{
 					return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
 				else
 					if (count($this->arrArgs) > 1)
-						throw new Exception("Too many parameter for ".$this->strEndpoint.". Expected only ".$strParamName);
+						throw new APIServerException("Too many parameter for ".$this->strEndpoint.". Expected only ".$strParamName,
+							APIServerException::PARAMS_MORE
+						);
 					else
 						if (count($this->arrArgs) == 0)
-							throw new Exception("Expected: ".$strParamName." for ".$this->strEndpoint);
+							throw new APIServerException("Expected: ".$strParamName." for ".$this->strEndpoint,
+									APIServerException::PARAMS_LESS
+								);
 					return $this->_response($this->{$this->strEndpoint}($this->arrArgs[0]));
 			}
 			else
+			{
+				if (count($this->arrArgs) > 0)
+					throw new APIServerException("Not expecting any parameters for ".$this->strEndpoint,
+							APIServerException::PARAMS_MORE
+						);
 				return $this->_response($this->{$this->strEndpoint}());
+			}
         }
-		else
-		{
-			throw new Exception("Method "."'".$this->strEndpoint."'"." not found!",400);
-		}
-        // return $this->_response('', 400);
+		throw new APIServerException("Method "."'".$this->strEndpoint."'"." not found!",APIServerException::HTTP_404);
     }
 	const REQUEST_GET = "GET";
 	const REQUEST_POST = "POST";
