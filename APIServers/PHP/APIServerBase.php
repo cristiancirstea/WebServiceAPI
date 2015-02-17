@@ -2,6 +2,13 @@
 require_once("APIServerException.php");
 abstract class APIServerBase{
 	
+	/**
+	*
+	*/
+	protected $_bUseStrictParameters = false;
+	/**
+	* 
+	*/
     protected $_returnFormatJSON = true;
      /**
      * Property: strMethod
@@ -178,7 +185,8 @@ abstract class APIServerBase{
 		//TODO add try catch for function call
 		//TODO Throw ERROR_CODES!!!
         if ((int)method_exists($this, $this->strEndpoint) > 0) {
-           // return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
+			if ( !$this->_bUseStrictParameters)
+				return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
 		   
 			$fct = new ReflectionMethod($this, $this->strEndpoint);
 			$nParamsNr = $fct->getNumberOfRequiredParameters();
@@ -231,12 +239,12 @@ abstract class APIServerBase{
 					return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
 				else
 					if (count($this->arrArgs) > 1)
-						throw new APIServerException("Too many parameter for ".$this->strEndpoint.". Expected only ".$strParamName,
+						throw new APIServerException("Too many parameter for ".$this->strEndpoint.". Expected only $".$strParamName,
 							APIServerException::PARAMS_MORE
 						);
 					else
 						if (count($this->arrArgs) == 0)
-							throw new APIServerException("Expected: ".$strParamName." for ".$this->strEndpoint,
+							throw new APIServerException("Expected: $".$strParamName." for ".$this->strEndpoint,
 									APIServerException::PARAMS_LESS
 								);
 					return $this->_response($this->{$this->strEndpoint}($this->arrArgs[0]));
