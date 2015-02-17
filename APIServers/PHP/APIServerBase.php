@@ -5,7 +5,7 @@ abstract class APIServerBase{
 	/**
 	*
 	*/
-	protected $_bUseStrictParameters = false;
+	protected $_bUseStrictParameters = true;
 	/**
 	* 
 	*/
@@ -184,9 +184,9 @@ abstract class APIServerBase{
 	{
 		//TODO add try catch for function call
 		//TODO Throw ERROR_CODES!!!
-        if ((int)method_exists($this, $this->strEndpoint) > 0) {
-			if ( !$this->_bUseStrictParameters)
-				return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
+        if ((int)method_exists($this, $this->strEndpoint) > 0) 
+		{
+			//return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
 		   
 			$fct = new ReflectionMethod($this, $this->strEndpoint);
 			$nParamsNr = $fct->getNumberOfRequiredParameters();
@@ -196,35 +196,39 @@ abstract class APIServerBase{
 				$arrParamsNames[] = $param->name;
 			}
 			//if method expects more than one parameter
-			
 			if ($nParamsNr > 1)
 			{
-				//
-				if (count($this->arrArgs) < $nParamsNr)
+				if ($this->_bUseStrictParameters)
 				{
-					$strParams = "$".$arrParamsNames[0];
-					for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
-						$strParams .= ", $".$arrParamsNames[$nIndex];
-					throw new APIServerException("Not enough parameters for " . $this->strEndpoint. "(".$strParams.")",
-							APIServerException::PARAMS_LESS
-						);
-				}
-				else
-					if (count($this->arrArgs) > $nParamsNr)
+					if (count($this->arrArgs) < $nParamsNr)
 					{
 						$strParams = "$".$arrParamsNames[0];
 						for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
 							$strParams .= ", $".$arrParamsNames[$nIndex];
-						throw new APIServerException("Too many parameters for " . $this->strEndpoint. "(".$strParams.")",
-								APIServerException::PARAMS_MORE
+						throw new APIServerException("Not enough parameters for " . $this->strEndpoint. "(".$strParams.")",
+								APIServerException::PARAMS_LESS
 							);
 					}
-				//optional can set the extra parameters to null and call the function
-				// //we makes sure that we call the method with all required parameters
-				// for( $i = count($this->arrArgs); $i < $nParamsNr; $i++)
-				// {
-					// $this->arrArgs[$i] = null;
-				// }
+					else
+						if (count($this->arrArgs) > $nParamsNr)
+						{
+							$strParams = "$".$arrParamsNames[0];
+							for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
+								$strParams .= ", $".$arrParamsNames[$nIndex];
+							throw new APIServerException("Too many parameters for " . $this->strEndpoint. "(".$strParams.")",
+									APIServerException::PARAMS_MORE
+								);
+						}
+				}
+				else
+				{
+					//optional can set the extra parameters to null and call the function
+					// //we makes sure that we call the method with all required parameters
+					for( $i = count($this->arrArgs); $i < $nParamsNr; $i++)
+					{
+						$this->arrArgs[$i] = null;
+					}
+				}
 				return $this->_response(
 						call_user_func_array(
 							array($this, $this->strEndpoint), $this->arrArgs)
@@ -238,23 +242,29 @@ abstract class APIServerBase{
 				if (strrpos($strParamName, "arr", -strlen($strParamName)) !== FALSE )
 					return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
 				else
-					if (count($this->arrArgs) > 1)
-						throw new APIServerException("Too many parameter for ".$this->strEndpoint.". Expected only $".$strParamName,
-							APIServerException::PARAMS_MORE
-						);
-					else
-						if (count($this->arrArgs) == 0)
-							throw new APIServerException("Expected: $".$strParamName." for ".$this->strEndpoint,
-									APIServerException::PARAMS_LESS
-								);
-					return $this->_response($this->{$this->strEndpoint}($this->arrArgs[0]));
+					if ($this->_bUseStrictParameters)
+					{
+						if (count($this->arrArgs) > 1)
+							throw new APIServerException("Too many parameter for ".$this->strEndpoint.". Expected only $".$strParamName,
+								APIServerException::PARAMS_MORE
+							);
+						else
+							if (count($this->arrArgs) == 0)
+								throw new APIServerException("Expected: $".$strParamName." for ".$this->strEndpoint,
+										APIServerException::PARAMS_LESS
+									);
+					}
+				return $this->_response($this->{$this->strEndpoint}(count($this->arrArgs) > 0 ? $this->arrArgs[0] : null));
 			}
 			else
 			{
-				if (count($this->arrArgs) > 0)
-					throw new APIServerException("Not expecting any parameters for ".$this->strEndpoint,
-							APIServerException::PARAMS_MORE
-						);
+				if ($this->_bUseStrictParameters)
+				{
+					if (count($this->arrArgs) > 0)
+						throw new APIServerException("Not expecting any parameters for ".$this->strEndpoint,
+								APIServerException::PARAMS_MORE
+							);
+				}
 				return $this->_response($this->{$this->strEndpoint}());
 			}
         }
