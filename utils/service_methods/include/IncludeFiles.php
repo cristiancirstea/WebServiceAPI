@@ -1,7 +1,7 @@
 <?php
     //include_once dirname(__FILE__).'/../library/Utils.php';
-    $_COMMON_CSS_FOLDER = './WS_UTILS/Service_Methods/library/css/';
-    $_COMMON_JS_FOLDER = './WS_UTILS/Service_Methods/library/js/';
+    $_COMMON_CSS_FOLDER = './service_methods/library/css/';
+    $_COMMON_JS_FOLDER = './service_methods/library/js/';
     //aparent nu ma lasa sa fac automat referire la directorul curent
     ////$_COMMON_CSS_FOLDER = dirname(__FILE__).'/../library/css/';
     //$_COMMON_JS_FOLDER = dirname(__FILE__).'/../library/js/';

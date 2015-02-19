@@ -95,7 +95,7 @@ if (isset($_POST[$param_name_user])){
         <a href="./editor" class="span4 well panel-main-menu panel-main-menu-col1" id="panel-mm-editor">
                 <img src="./library/img/edit-icon.png" class="img-rounded panel-icon"> 
                 <span class="text-main-menu">Editor</span>
-        <a href="./../../methods" class="span4 well panel-main-menu panel-main-menu-col2" id="panel-mm-methods">
+        <a href="./../methods" class="span4 well panel-main-menu panel-main-menu-col2" id="panel-mm-methods">
                 <img src="./library/img/chemistry-icon.png" class="img-rounded panel-icon"> 
                 <span class="text-main-menu">Method Lab</span>
         </a>

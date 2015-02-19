@@ -1,6 +1,7 @@
 <?php
 include  '/include/header.php';
-include '/../../My_API.php';
+include '/../../servers/php/APIServer.php';
+$CLASS_NAME = "APIServer";
 ?>
  <div class="container well" id="main-container">
      <div class=" span6">
@@ -27,7 +28,7 @@ include '/../../My_API.php';
 			}
 			$WS_ROOT= str_replace($strToReplace,'service',$fullURL);
 			$URI="/";
-			$rClass = new ReflectionClass('MyAPI');
+			$rClass = new ReflectionClass($CLASS_NAME);
 			$array = NULL;
 			$methodNr=0;
 			$paramNr=0;

@@ -1,7 +1,7 @@
 <?php
 
 require_once(dirname(__FILE__)."/APIServerBase.php");
-require_once(dirname(__FILE__)."/library/db/DBClass.mysql.php");
+// require_once(dirname(__FILE__)."/library/db/DBClass.mysql.php");
 
 class APIServer extends APIServerBase
 {

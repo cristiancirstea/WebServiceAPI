@@ -1,5 +1,4 @@
-<!--body-container-->
-<!--    </div>  -->
+
    <footer class="container-fluid">
        <?php
      //--------anulat momentan--------
@@ -19,6 +18,14 @@
         }
        ?>
     </footer>
+<?php
+    include_once dirname(__FILE__).'/IncludeFiles.php';
+
+    foreach($arAdditionalScript as $index => $elem)
+    {
+        echo  '<script src="'.$elem.'" type="text/javascript"></script> ';
+    }
+?>
 </body>
 </html>
 
