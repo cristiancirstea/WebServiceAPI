@@ -129,6 +129,10 @@ abstract class APIServerBase{
            // return $this->_response($this->{$this->_strEndpoint}($this->_arrArgs));
 		   
 			$fct = new ReflectionMethod($this, $this->_strEndpoint);
+
+			if (!$fct->isPublic())
+				throw new APIServerException("Method "."'".$this->_strEndpoint."'"." not found!",APIServerException::METHOD_NOT_PUBLIC);
+
 			$nParamsNr = $fct->getNumberOfRequiredParameters();
 			$arrParamsNames = array();
 			foreach($fct->getParameters() as $nIndex => $param)
@@ -288,7 +292,7 @@ abstract class APIServerBase{
 	/**
 	*
 	*/
-	protected function _setHTTPCredentials()
+	private function _setHTTPCredentials()
 	{
 		if (array_key_exists('PHP_AUTH_USER', $_SERVER))
 			$this->_strUser = $_SERVER['PHP_AUTH_USER'];
@@ -302,11 +306,66 @@ abstract class APIServerBase{
 			$this->_strPassword = $_SERVER['PHP_AUTH_PW'];
 		return true;
 	}
-	
-	
+
+
+	protected function exportPublicMethods($arrExcludedMethods)
+	{
+		$rClass = new ReflectionClass(get_called_class());
+		$nMethodNr = 0;
+		$nParamNr = 0;
+		$arrMethods = array();
+		$arrExcludedMethods = array_merge($arrExcludedMethods,array("__construct", "processAPI",__FUNCTION__));
+
+		foreach ($rClass->getMethods(ReflectionMethod::IS_PUBLIC) as $objMethod)
+		{
+			if(in_array($objMethod->getName(), $arrExcludedMethods))
+			{
+				continue;
+			}
+
+			$arrParams = array();
+			$params = $objMethod->getParameters();
+			foreach ($params as $objParam)
+			{
+				if ($objParam->isOptional())
+				{
+					$arrParams[] = array(
+						"name" => $objParam->getName(),
+						"default" => $objParam->getDefaultValue()
+					);
+				}
+				else
+				{
+					$arrParams[] = $objParam;
+				}
+			}
+			//TODO use @public and @return tags
+			/*$strPublicDoc = $objMethod->getDocComment();
+			if ($strPublicDoc)
+			{
+				$arrPublicDoc = explode("@public", $strPublicDoc);
+				if (count($arrPublicDoc) > 1)
+				{
+					$strPublicDoc = str_replace("*"," ",$arrPublicDoc[1]);
+					$strPublicDoc = trim(trim($strPublicDoc,"*\/\t "));
+				}
+			}*/
+
+			$arrMethods[$nMethodNr] = array(
+				"name" => $objMethod->getName(),
+				"params" => $arrParams,
+				//TODO
+//				"DocComment" => $strPublicDoc
+				//"uri" =>
+			);
+			$nMethodNr++;
+		}
+
+		return $arrMethods;
+	}
+
 	const REQUEST_GET = "GET";
 	const REQUEST_POST = "POST";
 	const REQUEST_PUT = "PUT";
 	const REQUEST_DELETE = "DELETE";
 }
-?>
