@@ -1,7 +1,14 @@
 <?php
 require_once("APIServerException.php");
 abstract class APIServerBase{
-	
+	/**
+	*
+	*/
+	protected $_strUser = NULL;
+	/**
+	*
+	*/
+	protected $_strPassword = NULL;
 	/**
 	*
 	*/
@@ -11,15 +18,15 @@ abstract class APIServerBase{
 	*/
     protected $_returnFormatJSON = true;
      /**
-     * Property: strMethod
+     * Property: _strMethod
      * The HTTP method this request was made in, either GET, POST, PUT or DELETE
      */
-    protected $strMethod = '';
+    protected $_strMethod = '';
     /**
-     * Property: strEndpoint
+     * Property: _strEndpoint
      * The Model requested in the URI. eg: /files
      */
-    protected $strEndpoint = '';
+    protected $_strEndpoint = '';
     /**
      * Property: verb
      * An optional additional descriptor about the endpoint, used for things that can
@@ -27,12 +34,12 @@ abstract class APIServerBase{
      */
 //    protected $verb = '';
     /**
-     * Property: arrArgs
+     * Property: _arrArgs
      * Any additional URI components after the endpoint and verb have been removed, in our
      * case, an integer ID for the resource. eg: /<endpoint>/<verb>/<arg0>/<arg1>
      * or /<endpoint>/<arg0>
      */
-    protected $arrArgs = Array();
+    protected $_arrArgs = Array();
     /**
      * Property: file
      * Stores the input of the PUT request
@@ -42,7 +49,8 @@ abstract class APIServerBase{
      * Constructor: __construct
      * Allow for CORS, assemble and pre-process the data
      */
-    protected $arrRequest=array();
+    protected $_arrRequest=array();
+	
 	
     public function __construct($arrRequest) {
         
@@ -53,29 +61,29 @@ abstract class APIServerBase{
             header("Content-Type: application/json");
         }
 //        var_export($arrRequest);
-        $this->arrArgs = explode('/', rtrim($arrRequest, '/'));
-        array_shift($this->arrArgs);
-        $this->strEndpoint = array_shift($this->arrArgs);
-//        if (array_key_exists(0, $this->arrArgs) && !is_numeric($this->arrArgs[0])) {
-//            $this->verb = array_shift($this->arrArgs);
+        $this->_arrArgs = explode('/', rtrim($arrRequest, '/'));
+        array_shift($this->_arrArgs);
+        $this->_strEndpoint = array_shift($this->_arrArgs);
+//        if (array_key_exists(0, $this->_arrArgs) && !is_numeric($this->_arrArgs[0])) {
+//            $this->verb = array_shift($this->_arrArgs);
 //            print_r($this->verb);
-//            print_r($this->arrArgs);
+//            print_r($this->_arrArgs);
 //        }
 
-        $this->strMethod = $_SERVER['REQUEST_METHOD'];
+        $this->_strMethod = $_SERVER['REQUEST_METHOD'];
         if ( 
-				($this->strMethod == self::REQUEST_POST) 
+				($this->_strMethod == self::REQUEST_POST) 
 					&& 
 				(array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER))
 			) 
 		{
             if ($_SERVER['HTTP_X_HTTP_METHOD'] == self::REQUEST_DELETE) 
 			{
-                $this->strMethod = self::REQUEST_DELETE;
+                $this->_strMethod = self::REQUEST_DELETE;
             } 
 			else if ($_SERVER['HTTP_X_HTTP_METHOD'] == self::REQUEST_PUT) 
 			{
-                $this->strMethod = self::REQUEST_PUT;
+                $this->_strMethod = self::REQUEST_PUT;
             } 
 			else {
                 throw new APIServerException("GWS0001 Unexpected Header");
@@ -83,18 +91,18 @@ abstract class APIServerBase{
         }
         $this->file = file_get_contents("php://input");
 		//TODO better handle the request params from $_POST or $_GET
-        switch($this->strMethod) {
+        switch($this->_strMethod) {
 //        case 'DELETE':
         case self::REQUEST_POST:
-            $this->arrRequest = $this->_cleanInputs($_POST);
+            $this->_arrRequest = $this->_cleanInputs($_POST);
             break;
         case self::REQUEST_GET:
-            $this->arrRequest = $this->_cleanInputs($_GET);
+            $this->_arrRequest = $this->_cleanInputs($_GET);
             break;
         case self::REQUEST_PUT:
         case self::REQUEST_DELETE:
-            $this->arrRequest = $this->_cleanInputs($_GET);
-            //parse_str($this->file,$this->arrRequest);
+            $this->_arrRequest = $this->_cleanInputs($_GET);
+            //parse_str($this->file,$this->_arrRequest);
             break;
         default:
             $this->_response('Invalid Method', 405);
@@ -102,6 +110,109 @@ abstract class APIServerBase{
         }
     }
 
+	
+	/**
+	* Calls the function in $this->_strEndpoint like this:
+	* 	- if it has many parameters (ex: foo($param1,$param2,...)) 
+	*		-> checks if was sent exactly the same number of params calls with each params		
+	* 	- if it has only one parameter (ex: foo($param) )
+	*		-> if first parameter contains "arr" passes all params as array
+	*		-> else passes value of first param
+	* @Throws error if less or more params was sent
+	*/
+    public function processAPI() 
+	{
+		$this->_setHTTPCredentials();
+		//TODO add try catch for function call
+		//TODO Throw ERROR_CODES!!!
+        if ((int)method_exists($this, $this->_strEndpoint) > 0) {
+           // return $this->_response($this->{$this->_strEndpoint}($this->_arrArgs));
+		   
+			$fct = new ReflectionMethod($this, $this->_strEndpoint);
+			$nParamsNr = $fct->getNumberOfRequiredParameters();
+			$arrParamsNames = array();
+			foreach($fct->getParameters() as $nIndex => $param)
+			{
+				$arrParamsNames[] = $param->name;
+			}
+			//if method expects more than one parameter
+			
+			if ($nParamsNr > 1)
+			{
+				if ($this->_bUseStrictParameters)
+				{
+					if (count($this->_arrArgs) < $nParamsNr)
+					{
+						$strParams = "$".$arrParamsNames[0];
+						for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
+							$strParams .= ", $".$arrParamsNames[$nIndex];
+						throw new APIServerException("Not enough parameters for " . $this->_strEndpoint. "(".$strParams.")",
+								APIServerException::PARAMS_LESS
+							);
+					}
+					else
+						if (count($this->_arrArgs) > $nParamsNr)
+						{
+							$strParams = "$".$arrParamsNames[0];
+							for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
+								$strParams .= ", $".$arrParamsNames[$nIndex];
+							throw new APIServerException("Too many parameters for " . $this->_strEndpoint. "(".$strParams.")",
+									APIServerException::PARAMS_MORE
+								);
+						}
+				}
+				else
+				{
+					//optional can set the extra parameters to null and call the function
+					// //we makes sure that we call the method with all required parameters
+					for( $i = count($this->arrArgs); $i < $nParamsNr; $i++)
+					{
+						$this->arrArgs[$i] = null;
+					}
+				}
+				return $this->_response(
+						call_user_func_array(
+							array($this, $this->_strEndpoint), $this->_arrArgs)
+						);
+			}
+		   else 
+			if ($nParamsNr === 1)
+			{
+				$strParamName = $arrParamsNames[0];
+				//if start with "arr" sends all parameters 
+				if (strrpos($strParamName, "arr", -strlen($strParamName)) !== FALSE )
+					return $this->_response($this->{$this->_strEndpoint}($this->_arrArgs));
+				else
+					if ($this->_bUseStrictParameters)
+					{
+						if (count($this->_arrArgs) > 1)
+							throw new APIServerException("Too many parameter for ".$this->_strEndpoint.". Expected only ".$strParamName,
+								APIServerException::PARAMS_MORE
+							);
+						else
+							if (count($this->_arrArgs) == 0)
+								throw new APIServerException("Expected: ".$strParamName." for ".$this->_strEndpoint,
+										APIServerException::PARAMS_LESS
+									);
+					}
+				return $this->_response($this->{$this->_strEndpoint}($this->_arrArgs[0]));
+			}
+			else
+			{
+				if ($this->_bUseStrictParameters)
+				{
+					if (count($this->_arrArgs) > 0)
+						throw new APIServerException("Not expecting any parameters for ".$this->_strEndpoint,
+								APIServerException::PARAMS_MORE
+							);
+				}
+				return $this->_response($this->{$this->_strEndpoint}());
+			}
+        }
+		throw new APIServerException("Method "."'".$this->_strEndpoint."'"." not found!",APIServerException::HTTP_404);
+    }
+	
+	
     private function _response($mxData, $nStatus = 200) {
         header("HTTP/1.1 " . $nStatus . " " . $this->_requestStatus($nStatus));
         $arrResponse = array(
@@ -114,6 +225,7 @@ abstract class APIServerBase{
 		return json_encode($arrResponse);
     }
 
+	
     private function _cleanInputs($arrData) {
         $arrCleanInput = Array();
         if (is_array($arrData)) {
@@ -126,6 +238,7 @@ abstract class APIServerBase{
         return $arrCleanInput;
     }
 
+	
     private function _requestStatus($nCode) {
         $arrStatus = array( 
             100 => 'Continue',   
@@ -171,105 +284,26 @@ abstract class APIServerBase{
             505 => 'HTTP Version Not Supported'); 
         return ( $arrStatus[$nCode]) ? $arrStatus[$nCode] : $arrStatus[500]; 
     }
+	
 	/**
-	* Calls the function in $this->strEndpoint like this:
-	* 	- if it has many parameters (ex: foo($param1,$param2,...)) 
-	*		-> checks if was sent exactly the same number of params calls with each params		
-	* 	- if it has only one parameter (ex: foo($param) )
-	*		-> if first parameter contains "arr" passes all params as array
-	*		-> else passes value of first param
-	* @Throws error if less or more params was sent
+	*
 	*/
-    public function processAPI() 
+	protected function _setHTTPCredentials()
 	{
-		//TODO add try catch for function call
-		//TODO Throw ERROR_CODES!!!
-        if ((int)method_exists($this, $this->strEndpoint) > 0) 
+		if (array_key_exists('PHP_AUTH_USER', $_SERVER))
+			$this->_strUser = $_SERVER['PHP_AUTH_USER'];
+		else
 		{
-			//return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
-		   
-			$fct = new ReflectionMethod($this, $this->strEndpoint);
-			$nParamsNr = $fct->getNumberOfRequiredParameters();
-			$arrParamsNames = array();
-			foreach($fct->getParameters() as $nIndex => $param)
-			{
-				$arrParamsNames[] = $param->name;
-			}
-			//if method expects more than one parameter
-			if ($nParamsNr > 1)
-			{
-				if ($this->_bUseStrictParameters)
-				{
-					if (count($this->arrArgs) < $nParamsNr)
-					{
-						$strParams = "$".$arrParamsNames[0];
-						for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
-							$strParams .= ", $".$arrParamsNames[$nIndex];
-						throw new APIServerException("Not enough parameters for " . $this->strEndpoint. "(".$strParams.")",
-								APIServerException::PARAMS_LESS
-							);
-					}
-					else
-						if (count($this->arrArgs) > $nParamsNr)
-						{
-							$strParams = "$".$arrParamsNames[0];
-							for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
-								$strParams .= ", $".$arrParamsNames[$nIndex];
-							throw new APIServerException("Too many parameters for " . $this->strEndpoint. "(".$strParams.")",
-									APIServerException::PARAMS_MORE
-								);
-						}
-				}
-				else
-				{
-					//optional can set the extra parameters to null and call the function
-					// //we makes sure that we call the method with all required parameters
-					for( $i = count($this->arrArgs); $i < $nParamsNr; $i++)
-					{
-						$this->arrArgs[$i] = null;
-					}
-				}
-				return $this->_response(
-						call_user_func_array(
-							array($this, $this->strEndpoint), $this->arrArgs)
-						);
-			}
-		   else 
-			if ($nParamsNr === 1)
-			{
-				$strParamName = $arrParamsNames[0];
-				//if start with "arr" sends all parameters 
-				if (strrpos($strParamName, "arr", -strlen($strParamName)) !== FALSE )
-					return $this->_response($this->{$this->strEndpoint}($this->arrArgs));
-				else
-					if ($this->_bUseStrictParameters)
-					{
-						if (count($this->arrArgs) > 1)
-							throw new APIServerException("Too many parameter for ".$this->strEndpoint.". Expected only $".$strParamName,
-								APIServerException::PARAMS_MORE
-							);
-						else
-							if (count($this->arrArgs) == 0)
-								throw new APIServerException("Expected: $".$strParamName." for ".$this->strEndpoint,
-										APIServerException::PARAMS_LESS
-									);
-					}
-				return $this->_response($this->{$this->strEndpoint}(count($this->arrArgs) > 0 ? $this->arrArgs[0] : null));
-			}
-			else
-			{
-				if ($this->_bUseStrictParameters)
-				{
-					if (count($this->arrArgs) > 0)
-						throw new APIServerException("Not expecting any parameters for ".$this->strEndpoint,
-								APIServerException::PARAMS_MORE
-							);
-				}
-				return $this->_response($this->{$this->strEndpoint}());
-			}
-        }
-		throw new APIServerException("Method "."'".$this->strEndpoint."'"." not found!",APIServerException::HTTP_404);
-    }
+			$this->_strUser = NULL;
+			$this->_strPassword = NULL;
+			return false;
+		}
+		if (array_key_exists('PHP_AUTH_PW', $_SERVER))
+			$this->_strPassword = $_SERVER['PHP_AUTH_PW'];
+		return true;
+	}
+	
+	
 	const REQUEST_GET = "GET";
 	const REQUEST_POST = "POST";
 	const REQUEST_PUT = "PUT";

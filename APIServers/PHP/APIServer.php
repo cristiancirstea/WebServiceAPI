@@ -1,13 +1,14 @@
 <?php
 
-include_once dirname(__FILE__).'/APIServerBase.php';
+require_once(dirname(__FILE__)."/APIServerBase.php");
+require_once(dirname(__FILE__)."/library/db/DBClass.mysql.php");
 
 class APIServer extends APIServerBase
 {
     public function __construct($arrRequest, $origin) {
         parent::__construct($arrRequest);
 
-       if (strtoupper($this->strMethod)=="PUT" || strtoupper($this->strMethod)=="DELETE"){
+       if (strtoupper($this->_strMethod)=="PUT" || strtoupper($this->_strMethod)=="DELETE"){
            if (!$this->arrRequest)
            {
                $this->arrRequest = array();
@@ -42,6 +43,23 @@ class APIServer extends APIServerBase
 	protected function echoMessage($strMessage)
 	{
 		return func_get_args();
+	}
+	protected function test_client($arrParams)
+	{
+		return array(
+			"request" => $this->_arrRequest,
+			"params" => $arrParams,
+			"method" => $this->_strMethod,
+			"user" => $this->_strUser,
+			"password" => $this->_strPassword
+		);
+	}
+	protected function evenimente()
+	{
+		$db = new DBClass();
+		$result = $db->GetTable("select * from evenimente");
+		unset($db);
+		return $result;
 	}
 }
 ?>
