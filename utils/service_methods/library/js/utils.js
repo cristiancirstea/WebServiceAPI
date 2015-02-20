@@ -147,7 +147,7 @@ function GetDataFromRequest(url,params,submitMethod,callBackFunction)
         {
             var callbacks = $.Callbacks();
             callbacks.add(callBackFunction);
-            callbacks.fire(JSONSafeParse(msg,true));
+            callbacks.fire(msg);
         }
     });
 //daca e vreo eroare...

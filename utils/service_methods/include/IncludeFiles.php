@@ -29,7 +29,8 @@
         //'jquery.event.drop-2.2.js',
 	//	'common.js',
 		'utils.js',
-                'script.js'
+        'utils.obj.js',
+        'script.js'
         );
     $arAdditionalLink[] = array("icon",$_COMMON_CSS_FOLDER."ws-icon1.png","image");
     

@@ -1,1 +1,1 @@
-<?php $_EDITOR_THEME = array("dan"=>"merbivore_soft","default"=>"clouds","admin"=>"katzenmilch","cristi"=>"xcode");?>
+<?php $_EDITOR_THEME = array("dan"=>"merbivore_soft","default"=>"clouds","admin"=>"xcode","cristi"=>"xcode");?>

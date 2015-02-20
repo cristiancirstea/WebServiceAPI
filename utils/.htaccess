@@ -2,7 +2,7 @@
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule methods(.*)$ ./service_methods/service_methods.php?request=$1 [QSA,NC,L]
+RewriteRule methods(.*)$ ./service_methods/sm.php?request=$1 [QSA,NC,L]
 </IfModule>
 
 <IfModule mod_rewrite.c>

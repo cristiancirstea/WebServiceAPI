@@ -13,14 +13,15 @@ class APIServer extends APIServerBase
 
         $this->_strOrigin = $origin;
        if (strtoupper($this->_strMethod)=="PUT" || strtoupper($this->_strMethod)=="DELETE"){
-           if (!$this->arrRequest)
+           if (!$this->_arrRequest)
            {
-               $this->arrRequest = array();
+               $this->_arrRequest = array();
            }
-           var_export($this->arrRequest);
+          // var_export($this->_arrRequest);
            //PUT params are considered in JSON format!!!
            $putParams = json_decode($this->file,1);
-           $this->arrRequest = array_merge( $this->arrRequest,$putParams);
+           if ($putParams)
+           $this->_arrRequest = array_merge( $this->_arrRequest, $putParams);
            unset($putParams);
         }
     }

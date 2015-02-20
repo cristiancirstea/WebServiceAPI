@@ -26,6 +26,5 @@
         echo  '<script src="'.$elem.'" type="text/javascript"></script> ';
     }
 ?>
-</body>
-</html>
+
 

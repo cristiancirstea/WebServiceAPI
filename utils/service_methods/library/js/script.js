@@ -1,39 +1,205 @@
-$(document).on("ready",function(){
-		$(".method-options").hide();
-		//toggle params list
-		$(".btn-toggle-params").on("click",function(){
-			var btn=$(this);
-			var paramsToShow=$(this).parent(".method-name")
-					.siblings(".method-options");
-			paramsToShow.slideToggle(50,function(){
-						if (ElementVisible($(paramsToShow)))
-							{
-								
-								btn.text('-');
-							}
-							else{
-								btn.text('+');
-							}
-					});
-			
+
+
+function getAPIMethods()
+{
+	getAPIResponse("methods",
+		[],
+		"GET",
+		renderAPIMethods
+	);
+}
+
+function renderAPIMethods(arrMethods)
+{
+	if (typeof arrMethods === "undefined")
+		return;
+	var containerMethods = document.getElementById("methods-container");
+	for(var i = 0; i < arrMethods.length; i++)
+	{
+		var strHTMLParams = "<div class=\"method-params\">";
+		if (arrMethods[i].params)
+			for (var j = 0; j < arrMethods[i].params.length; j++)
+			{
+				strHTMLParams += "<div class=\"method-param-name\">";
+				strHTMLParams += "<label for=\"param-" + arrMethods[i].params[j].name + j + "\" class=\"label-param-name\">";
+				strHTMLParams += arrMethods[i].params[j].name + " : </label>";
+				strHTMLParams += "<input type=\"text\" id=\"param-" + arrMethods[i].params[j].name + j + "\"";
+				strHTMLParams += "class=\"method-param-value method-param-value" + i +"\"/>";
+				strHTMLParams += "</div> ";
+			}
+		strHTMLParams += "</div>";
+		var strHTMLActions =
+			"<div class=\"method-buttons\" id=\"method-buttons" + i + "\" >" +
+			" <input type=\"hidden\" class=\"inputMethodNr\" id=\"uri-method" + i + "\"" +
+			" value=\"" +  arrMethods[i].name + "\">" +
+			" <div class=\"btn-group btn-group-ws-response pull-right\">" +
+			" <button class=\"btn btn-small  btn-ws-response btn-get-response\"" +
+			" id=\"btn-get-response" + i + "\" methodNr=\"" + i + "\">" +
+			" <b>Get</b>" +
+			" </button>" +
+			" <button class=\"btn btn-small  btn-ws-response btn-post-response\" " +
+			" id=\"btn-post-response" + i + "\" methodNr=\"" + i + "\"> " +
+			" Post" +
+			" </button>" +
+			" <button class=\"btn btn-small btn-ws-response btn-put-response\" " +
+			" id=\"btn-put-response" + i + "\" methodNr=\"" + i + "\">" +
+			" Put " +
+			" </button> " +
+			" <button class=\"btn btn-small btn-danger btn-ws-response btn-delete-response\"" +
+			" id=\"btn-delete-response" + i + "\" methodNr=\" + i + \">" +
+			" Delete " +
+			" </button>"+
+			" </div>" +
+			" </div>";
+		var strHTML =
+			"<div class=\"row-method\" id=\"row-method" + i + "\">" +
+			"<div class=\"method-name\">" +
+			"<span class=\"text-method cursor-pointer\" " +
+			"onclick=\"$('#mth-btn" + i +"').trigger('click')\" id=\"mth-name" + i + "\">" +
+			arrMethods[i].name +
+			"</span>" +
+			"<button class=\"btn btn-toggle-params pull-right\" id=\"mth-btn" + i + "\">" +
+			"+" +
+			"</button>" +
+			"</div>" +
+			"<div class=\"method-options\" id=\"method-options" + i +"\">" +
+			strHTMLParams +
+			strHTMLActions +
+			"</div>" +
+			"</div>";
+		containerMethods.innerHTML += strHTML + "\n";
+
+	}
+	pageInit();
+	$("textarea").val("");
+}
+
+function checkUtils()
+{
+	if (typeof(utils) === 'undefined')
+	{
+		try
+		{
+			var utils = new Utils();
+		}
+		catch(exc)
+		{
+			console.error(exc);
+			alert("Utils library not found!");
+			return false;
+		}
+	}
+	return true;
+}
+
+function renderAPIError(strErrorMessage, nErrorCode)
+{
+	console.error(strErrorMessage, nErrorCode);
+}
+
+function renderAPIResponse(mxResponse)
+{
+	if (typeof mxResponse === "undefined")
+	{
+		throw new Error("Undefined response.");
+	}
+
+	var textarea = document.getElementById("text-return-ws");
+	var statusCode = document.getElementById("response-status");
+
+	textarea.value = JSON.stringify(mxResponse, undefined, 4);
+	statusCode.innerHTML = mxResponse.status;
+	if (mxResponse.status)
+	{
+		if (mxResponse.status >= 200 && mxResponse.status < 300)
+			statusCode.className = "text-success";
+		else
+			statusCode.className = "text-danger";
+	}
+	//TODO use ace9 editor
+	//console.log(mxResponse);
+}
+
+
+function getAPIResponse(strMethodName, arrParams, strHTTPRequestType, onResponse, onError)
+{
+	if (!checkUtils()) return;
+	if (typeof strHTTPRequestType === "undefined")
+	{
+		strHTTPRequestType = "GET";
+	}
+	if (typeof arrParams === "undefined")
+	{
+		arrParams = [];
+	}
+	utils.getDataFromRequest(
+		_WS_ROOT + strMethodName,
+		{
+			method : strHTTPRequestType,
+			params : arrParams,
+			callBack : function(mxResult)
+			{
+				if (mxResult instanceof Error)
+					throw mxResult;
+				if (mxResult.error)
+				{
+					if (onError)
+					{
+						onError(new Error(mxResult.error, mxResult.code));
+					}
+					var error =  new Error(mxResult.error, mxResult.code);
+					renderAPIError(mxResult.error, mxResult.code);
+					//throw error;
+				}
+
+				renderAPIResponse(mxResult);
+				if (onResponse)
+				{
+					onResponse(mxResult.result);
+				}
+
+			}
+		}
+	);
+}
+
+function pageInit()
+{
+	$(".method-options").hide();
+	//toggle params list
+	$(".btn-toggle-params").on("click",function(){
+		var btn=$(this);
+		var paramsToShow=$(this).parent(".method-name")
+			.siblings(".method-options");
+		paramsToShow.slideToggle(50,function(){
+			if (ElementVisible($(paramsToShow)))
+			{
+
+				btn.text('-');
+			}
+			else{
+				btn.text('+');
+			}
 		});
-		
-	ActivateBtnGetResponse();	
+
+	});
+
+	ActivateBtnGetResponse();
 	ActivateBtnPostResponse();
 	ActivateBtnPutResponse();
 	ActivateBtnDeleteResponse();
-	
+
 	ActivateBtnAddParamValue();
 	ActivateBtnAddExtraRequest();
 	ActivateBtnCloseParent();
-        
-        if (ElementVisible("body-container-editor")){
-            $("#body-container-editor").css({
-                height:(window.innerHeight-80)+"px"
-            });
-        }
-});
 
+	if (ElementVisible("body-container-editor")){
+		$("#body-container-editor").css({
+			height:(window.innerHeight-80)+"px"
+		});
+	}
+
+}
 
 function GetBtnURI(theBtn)
 {
@@ -98,46 +264,49 @@ if (typeof(theBtn)==="string")
 function ActivateBtnGetResponse()
 {
 	$(".btn-get-response").on("click",function(){
-		
-		GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
-			"GET",function(obj){
-					Console(obj);
-					$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
-				});
+
+		getAPIResponse(GetBtnURI($(this)),[],"GET");
+		//GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
+		//	"GET",function(obj){
+		//			//Console(obj);
+		//			$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
+		//		});
 	});
 }
 function ActivateBtnPostResponse()
 {
 	$(".btn-post-response").on("click",function(){
-		
-		GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
-			"POST",function(obj){
-					Console(obj);
-					$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
-				})
+
+		getAPIResponse(GetBtnURI($(this)),[],"POST");
+		//GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
+		//	"POST",function(obj){
+		//			Console(obj);
+		//			$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
+		//		})
 	});
 }
 //-----------------------PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function ActivateBtnPutResponse()
 {
 	$(".btn-put-response").on("click",function(){
-		
-		GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
-			"PUT",function(obj){
-					Console(obj);
-					$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
-				})
+		getAPIResponse(GetBtnURI($(this)),[],"PUT");
+		//GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
+		//	"PUT",function(obj){
+		//			Console(obj);
+		//			$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
+		//		})
 	});
 }
 function ActivateBtnDeleteResponse()
 {
 	$(".btn-delete-response").on("click",function(){
-		
-		GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
-			"DELETE",function(obj){
-					Console(obj);
-					$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
-				})
+
+		getAPIResponse(GetBtnURI($(this)),[],"DELETE");
+		//GetDataFromRequest(GetBtnURI($(this)),GetBtnRequest($(this)),
+		//	"DELETE",function(obj){
+		//			Console(obj);
+		//			$("#text-return-ws").val(JSON.stringify(obj,undefined,4));
+		//		})
 	});
 }
 //-------------------------------------
