@@ -1,0 +1,61 @@
+{
+    "editor_root_folder": ".\/..\/..\/",
+    "allowed_users": [
+        {
+            "user_id": 1,
+            "username": "admin",
+            "password": "admin",
+            "admin_rights": true
+        },
+        {
+            "user_id": 2,
+            "username": "cristi",
+            "password": "a",
+            "admin_rights": false
+        },
+        {
+            "user_id": 3,
+            "username": "dan",
+            "password": "d",
+            "admin_rights": false
+        },
+        {
+            "user_id": 4,
+            "username": "claudiu",
+            "password": "c",
+            "admin_rights": false
+        }
+    ],
+    "hidden_files": [
+        ".\/editor.php",
+        ".\/writer.php",
+        ".\/.htaccess",
+        ".\/index.php",
+        ".\/editor_theme.php",
+        ".\/Security.php",
+        ".\/_Common",
+        ".\/user_config.php"
+    ],
+    "user_themes": [
+        {
+            "user_id": -1,
+            "theme": "tomorrow"
+        },
+        {
+            "user_id": 1,
+            "theme": "xcode"
+        },
+        {
+            "user_id": 2,
+            "theme": "xcode"
+        },
+        {
+            "user_id": 3,
+            "theme": "cobalt"
+        },
+        {
+            "user_id": 4,
+            "theme": "xcode"
+        }
+    ]
+}
