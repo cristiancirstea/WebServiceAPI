@@ -10,8 +10,13 @@ class APIServerException extends Exception
 
 	const METHOD_NOT_FOUND = 1004;
 
+	const METHOD_NOT_IMPLEMENTED = 1005;
+
 	const PARAMS_LESS = 1101;
 	
 	const PARAMS_MORE = 1102;
-	//......
+
+	const PARAM_REQUEST_NOT_GIVEN = 2001;
+
+	const USER_NOT_FOUND = 4002;
 }

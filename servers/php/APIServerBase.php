@@ -52,14 +52,17 @@ abstract class APIServerBase{
     protected $_arrRequest=array();
 	
 	
-    public function __construct($arrRequest) {
+    public function __construct($arrRequest)
+	{
         
 		header("Access-Control-Allow-Origin: *");
         header("Access-Control-Allow-Methods: *");
-		
+
+
         if ($this->_returnFormatJSON){
             header("Content-Type: application/json");
         }
+
 //        var_export($arrRequest);
         $this->_arrArgs = explode('/', rtrim($arrRequest, '/'));
         array_shift($this->_arrArgs);
@@ -133,7 +136,9 @@ abstract class APIServerBase{
 			if (!$fct->isPublic())
 				throw new APIServerException("Method "."'".$this->_strEndpoint."'"." not found!",APIServerException::METHOD_NOT_PUBLIC);
 
+			//TODO handle default values
 			$nParamsNr = $fct->getNumberOfRequiredParameters();
+			$nParamsNrMax = $fct->getNumberOfParameters();
 			$arrParamsNames = array();
 			foreach($fct->getParameters() as $nIndex => $param)
 			{
@@ -141,7 +146,7 @@ abstract class APIServerBase{
 			}
 			//if method expects more than one parameter
 			
-			if ($nParamsNr > 1)
+			if ($nParamsNrMax > 1)
 			{
 				if ($this->_bUseStrictParameters)
 				{
@@ -155,7 +160,7 @@ abstract class APIServerBase{
 							);
 					}
 					else
-						if (count($this->_arrArgs) > $nParamsNr)
+						if (count($this->_arrArgs) > $nParamsNrMax)
 						{
 							$strParams = "$".$arrParamsNames[0];
 							for($nIndex = 1; $nIndex < count($arrParamsNames); $nIndex++ )
@@ -180,7 +185,7 @@ abstract class APIServerBase{
 						);
 			}
 		   else 
-			if ($nParamsNr === 1)
+			if ($nParamsNrMax === 1)
 			{
 				$strParamName = $arrParamsNames[0];
 				//if start with "arr" sends all parameters 
@@ -194,21 +199,25 @@ abstract class APIServerBase{
 								APIServerException::PARAMS_MORE
 							);
 						else
-							if (count($this->_arrArgs) == 0)
+							if ((count($this->_arrArgs) == 0) && ($nParamsNr !== 0))
 								throw new APIServerException("Expected: ".$strParamName." for ".$this->_strEndpoint,
 										APIServerException::PARAMS_LESS
-									);
+								);
+
 					}
-				return $this->_response($this->{$this->_strEndpoint}($this->_arrArgs[0]));
+				if (count($this->_arrArgs) == 0)
+					return $this->_response($this->{$this->_strEndpoint}());
+				else
+					return $this->_response($this->{$this->_strEndpoint}($this->_arrArgs[0]));
 			}
 			else
 			{
 				if ($this->_bUseStrictParameters)
 				{
-					if (count($this->_arrArgs) > 0)
-						throw new APIServerException("Not expecting any parameters for ".$this->_strEndpoint,
-								APIServerException::PARAMS_MORE
-							);
+						if (count($this->_arrArgs) > 0)
+							throw new APIServerException("Not expecting any parameters for ".$this->_strEndpoint,
+									APIServerException::PARAMS_MORE
+								);
 				}
 				return $this->_response($this->{$this->_strEndpoint}());
 			}
@@ -230,7 +239,8 @@ abstract class APIServerBase{
     }
 
 	
-    private function _cleanInputs($arrData) {
+    private function _cleanInputs($arrData)
+	{
         $arrCleanInput = Array();
         if (is_array($arrData)) {
             foreach ($arrData as $strKey => $mxValue) {

@@ -1,7 +1,6 @@
 <?php
 
 require_once(dirname(__FILE__)."/APIServerBase.php");
-// require_once(dirname(__FILE__)."/library/db/DBClass.mysql.php");
 
 class APIServer extends APIServerBase
 {
@@ -19,7 +18,7 @@ class APIServer extends APIServerBase
            }
           // var_export($this->_arrRequest);
            //PUT params are considered in JSON format!!!
-           $putParams = json_decode($this->file,1);
+           $putParams = json_decode($this->file, 1);
            if ($putParams)
            $this->_arrRequest = array_merge( $this->_arrRequest, $putParams);
            unset($putParams);
@@ -27,29 +26,20 @@ class APIServer extends APIServerBase
     }
 
     /*
-     * Endpoints: /@strMethod_name (".../service/@strMethod_name[/@argument1/@argument2...][?param_request=val_param_request...]")
+     * Endpoints: /@strMethod_name (".../api/@strMethod_name[/@argument1/@argument2...][?param_request=val_param_request...]")
      */
 	 
-    public function login()
-    {
-        return false;
-    }
 
-
-    public function logout($key, $ceva = null)
-    {
-         return false;
-    }
 
     /**
      *
      * @return bool
      */
-    protected function test_connection(/*$arrParams*/)
+    public function test_connection(/*$arrParams*/)
     {
         return true;
     }
-
+	
     /**
      * Return the given string.
      * @param $strMessage
@@ -81,17 +71,6 @@ class APIServer extends APIServerBase
 	}
 
     /**
-     * @return Associative_array
-     */
-	public function evenimente()
-	{
-		$db = new DBClass();
-		$result = $db->GetTable("select * from evenimente");
-		unset($db);
-		return $result;
-	}
-
-    /**
      * @return array
      */
     public function methods()
@@ -100,9 +79,14 @@ class APIServer extends APIServerBase
     }
 
 
-    public function test_function($p1, $p2, $p3 = array(), $p4 = "ceva", $p5 = 10, $p6 = true)
+    /************************** API Public Methods************************/
+    public function login()
     {
-
+        return false;
     }
 
-}
+
+    public function logout($key, $ceva = NULL)
+    {
+        return false;
+    }

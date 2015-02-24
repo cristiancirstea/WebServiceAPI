@@ -24,6 +24,8 @@ function renderAPIMethods(arrMethods)
 				strHTMLParams += "<label for=\"param-" + arrMethods[i].params[j].name + j + "\" class=\"label-param-name\">";
 				strHTMLParams += arrMethods[i].params[j].name + " : </label>";
 				strHTMLParams += "<input type=\"text\" id=\"param-" + arrMethods[i].params[j].name + j + "\"";
+				if (arrMethods[i].params[j].default)
+					strHTMLParams += " placeholder=\"" + arrMethods[i].params[j].default + "\" ";
 				strHTMLParams += "class=\"method-param-value method-param-value" + i +"\"/>";
 				strHTMLParams += "</div> ";
 			}

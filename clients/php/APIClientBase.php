@@ -18,9 +18,30 @@ class APIClientBase
 		$this->_strEndpointUser = $strUser;
 		$this->_strEndpointPassword = $strPassword;
 	}
-	
-	protected function _APIServerCall($strFunctionName, $arrQuery = NULL, $arrParams = NULL, $strMethod = self::REQUEST_GET)
+
+	public function encodeRequestParams($arrRequestParams, $strMethod = self::REQUEST_GET)
 	{
+		if ($arrRequestParams === NULL)
+		{
+			return "";
+		}
+		else
+		{
+			switch($strMethod)
+			{
+				case self::REQUEST_GET:
+					return "?".http_build_query($arrRequestParams);
+				default:
+					return "";
+			}
+		}
+
+	}
+
+
+	protected function _APIServerCall($strFunctionName, $arrRequestParams = NULL, $strMethod = self::REQUEST_GET)
+	{
+
 		if(!$this->_cURLCheckBasicFunctions()){
 			throw new Exception("cURL basic functions not found.",-1);
 		}
@@ -38,26 +59,33 @@ class APIClientBase
 		{
 			throw new Exception("'".$strMethod."'method not supported");
 		}
+//		$strRequest = json_encode($arrRequestParams);
+//		$strRequest = http_build_query($arrRequestParams);
 		$arrHeader = array(
-				'Content-type: application/json'
+//				'Content-type: application/x-www-form-urlencoded'
+				'Content-type: multipart/form-data'
+//				"Content-Type: application/json",
+//				'Content-Length: ' . strlen($strRequest)
 			);
+
 		$arrcURLOptions = array(
 			CURLOPT_HEADER => false,
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CONNECTTIMEOUT => 1,
-			CURLOPT_HTTPAUTH => CURLAUTH_NTLM,//CURLAUTH_BASIC,
+			CURLOPT_CONNECTTIMEOUT => 2,
+			CURLOPT_HTTPAUTH => /*CURLAUTH_NTLM,*/CURLAUTH_BASIC,
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => false,
-			CURLOPT_VERBOSE => 1,
-			CURLOPT_FOLLOWLOCATION => true
+			//CURLOPT_VERBOSE => 1,
+			CURLOPT_FOLLOWLOCATION => false,
 		);
+
 		$strEndpointCall = $this->_strEndpointURL . "/" . trim($strFunctionName);
-		if ($arrQuery !== NULL)
-		{
-			$strEndpointCall .= "?".http_build_query($arrQuery);
-		}
+		if ($strMethod == self::REQUEST_GET)
+			$strEndpointCall .= $this->encodeRequestParams($arrRequestParams, $strMethod);
+
 		$cURL = curl_init();
-		
+
+		curl_setopt_array($cURL, $arrcURLOptions);
 		
 		curl_setopt($cURL, CURLOPT_HTTPHEADER, $arrHeader);
 		curl_setopt($cURL, CURLOPT_URL, $strEndpointCall);
@@ -66,22 +94,25 @@ class APIClientBase
 		switch($strMethod)
 		{
 			case self::REQUEST_GET:
-			{
+
+				curl_setopt($cURL,CURLOPT_POST, false);
 				curl_setopt($cURL, CURLOPT_POSTFIELDS, NULL);
-			}
+			break;
 			case self::REQUEST_POST:
-			{
-				curl_setopt($cURL, CURLOPT_POSTFIELDS, $arrParams); 
-			}
+				//return json_encode(http_build_query(array("cae","asdsad")));
+				curl_setopt($cURL, CURLOPT_POST, true);
+				curl_setopt($cURL, CURLOPT_POSTFIELDS, $arrRequestParams);
+			break;
 			case self::REQUEST_PUT:
-			{
-				curl_setopt($cURL, CURLOPT_POSTFIELDS, NULL);
-			}
+				curl_setopt($cURL,CURLOPT_POST, false);
+				curl_setopt($cURL, CURLOPT_POSTFIELDS, json_encode($arrRequestParams));
+			break;
 			case self::REQUEST_DELETE:
-			{
+				curl_setopt($cURL,CURLOPT_POST, false);
 				curl_setopt($cURL, CURLOPT_POSTFIELDS, NULL);
-			}
+			break;
 		}
+
 		if (isset($this->_strEndpointUser))
 		{
 			curl_setopt($cURL, CURLOPT_USERPWD, $this->_strEndpointUser.':'.$this->_strEndpointPassword);
@@ -90,10 +121,13 @@ class APIClientBase
 		{
 			curl_setopt($cURL, CURLOPT_USERPWD, NULL);
 		}
-		curl_setopt_array($cURL, $arrcURLOptions);
-		
+
+		//return json_encode($arrcURLOptions);
+
+
 		$strResponse = curl_exec($cURL);
-		
+
+
 		curl_close($cURL);
 		
 		return $strResponse;
